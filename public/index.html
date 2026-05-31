@@ -1,1 +1,463 @@
-te
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox T-Shirt Maker</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .mode-toggle-btn {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background: #252525;
+            color: #00bfff;
+            border: 2px solid #00bfff;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1000;
+            transition: 0.2s;
+            font-size: 0.9rem;
+        }
+        .mode-toggle-btn:hover {
+            background: #00bfff;
+            color: #000;
+            box-shadow: 0 0 15px rgba(0, 191, 255, 0.4);
+        }
+
+        /* --- NORMAL MODE --- */
+        .container {
+            background-color: #1e1e1e;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            width: 520px;
+            max-width: 95vw;
+            display: block;
+        }
+        h1 { text-align: center; color: #00bfff; font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .subtitle { text-align: center; color: #666; font-size: 0.8rem; margin-bottom: 1.2rem; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-size: 0.9rem; color: #bbb; }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #333;
+            background: #252525;
+            color: white;
+            font-size: 0.95rem;
+        }
+        input:focus, select:focus { outline: none; border-color: #00bfff; }
+
+        .image-upload-area {
+            border: 2px dashed #444;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-bottom: 15px;
+            position: relative;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .image-upload-area:hover { border-color: #00bfff; background: #1a2a35; }
+        .image-upload-area.has-image { border-color: #00bfff; }
+        .image-upload-area img {
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        .image-upload-area .upload-text { color: #888; font-size: 0.85rem; }
+        .image-upload-area .upload-hint { color: #555; font-size: 0.72rem; margin-top: 4px; }
+        #imageInput { display: none; }
+
+        .normal-gen-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            background-color: #00bfff;
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+        .normal-gen-btn:hover { background-color: #009ad6; }
+        .normal-gen-btn:disabled { background-color: #555; color: #999; cursor: not-allowed; }
+
+        .btn-secondary { background-color: #333; color: #ccc; }
+        .btn-secondary:hover { background-color: #444; }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 8px;
+        }
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            accent-color: #00bfff;
+        }
+        .checkbox-group label { margin: 0; color: #ccc; font-size: 0.85rem; }
+
+        #status {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            display: none;
+            max-height: 450px;
+            overflow-y: auto;
+        }
+        #configInfo {
+            color: #888;
+            font-size: 0.8rem;
+            margin-bottom: 15px;
+            min-height: 1.2em;
+            text-align: center;
+        }
+        #configInfo span { color: #00bfff; font-weight: bold; }
+
+        .tshirt-card {
+            background: #2a2a2a; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px;
+            display: flex; align-items: center; justify-content: space-between; border-left: 3px solid #00bfff;
+        }
+        .tshirt-card.error { border-left-color: #ff4141; }
+        .tshirt-id { font-family: 'Consolas', 'Courier New', monospace; color: #fff; font-size: 0.9rem; font-weight: bold; word-break: break-all; }
+        .tshirt-detail { color: #888; font-size: 0.75rem; margin-top: 2px; }
+        .tshirt-sale { color: #4ecdc4; }
+        .tshirt-error-text { color: #ff6b6b; font-size: 0.8rem; word-break: break-word; }
+
+        .copy-btn {
+            width: auto; padding: 6px 14px; font-size: 0.75rem; margin: 0 0 0 10px; border-radius: 4px;
+            background: #333; color: #00bfff; border: 1px solid #00bfff; flex-shrink: 0; min-width: 60px; text-align: center; cursor: pointer;
+        }
+        .copy-btn:hover { background: #00bfff; color: #000; }
+        .summary-box { background: #2d2d2d; border-radius: 6px; padding: 10px; margin-bottom: 10px; text-align: center; font-size: 0.9rem; border-left: 4px solid #00bfff; }
+        .working { background: #2d2d2d; border-radius: 6px; padding: 12px; text-align: center; color: #888; border-left: 4px solid #00bfff; }
+
+        /* --- FAST MODE --- */
+        #fastModeContainer {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background-color: #121212;
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+        }
+        .fast-wrapper {
+            position: relative;
+            width: 95vw;
+            height: 90vh;
+        }
+        #giantGenerateBtn {
+            width: 100%; height: 100%;
+            background-color: #00bfff;
+            color: black; border: none; border-radius: 20px;
+            font-weight: bold; cursor: pointer;
+            transition: background-color 0.2s, box-shadow 0.2s;
+            display: flex; justify-content: center; align-items: flex-end;
+            padding-bottom: 6vh;
+            box-shadow: 0 0 40px rgba(0, 191, 255, 0.15);
+        }
+        #giantBtnText { font-size: 3.5rem; letter-spacing: 2px; user-select: none; }
+        #giantGenerateBtn:hover { background-color: #009ad6; box-shadow: 0 0 60px rgba(0, 191, 255, 0.3); }
+        #giantGenerateBtn:disabled { background-color: #222; color: #555; cursor: not-allowed; box-shadow: none; }
+
+        .fast-input-overlay {
+            position: absolute; top: 40%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background: rgba(18, 18, 18, 0.93);
+            padding: 35px 50px; border-radius: 18px;
+            border: 3px solid #00bfff;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.7);
+        }
+        .fast-input-overlay label {
+            display: block; color: #00bfff; font-size: 1.5rem;
+            font-weight: bold; margin-bottom: 15px; letter-spacing: 1px;
+        }
+        .fast-input-overlay input {
+            width: 240px; padding: 18px; font-size: 3rem;
+            text-align: center; border-radius: 12px;
+            border: 2px solid #444; background: #202020;
+            color: white; font-weight: bold;
+        }
+        .fast-input-overlay input:focus { outline: none; border-color: #00bfff; box-shadow: 0 0 15px rgba(0,191,255,0.2); }
+
+        #fastStatus {
+            position: absolute; bottom: 18vh; left: 50%;
+            transform: translateX(-50%);
+            font-size: 2rem; font-weight: bold; color: #000;
+            text-align: center; width: 80%; pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+<button id="toggleModeBtn" class="mode-toggle-btn">FAST MODE</button>
+
+<div class="container" id="normalContainer">
+    <h1>Roblox T-Shirt Maker</h1>
+    <div class="subtitle">Bulk create T-shirts &middot; auto put on sale</div>
+
+    <div id="configInfo">Loading...</div>
+
+    <div class="image-upload-area" id="uploadArea" onclick="document.getElementById('imageInput').click()">
+        <div class="upload-text">Click to upload T-shirt image</div>
+        <div class="upload-hint">PNG or JPG &middot; 585x559 recommended &middot; optional</div>
+    </div>
+    <input type="file" id="imageInput" accept="image/png,image/jpeg,image/webp">
+
+    <div class="input-group">
+        <label>Name</label>
+        <input type="text" id="tshirtName" value="" placeholder="Leave empty to use price as name" autocomplete="off">
+    </div>
+
+    <div class="input-group">
+        <label>Price (Robux)</label>
+        <input type="number" id="price" value="5" min="1" autocomplete="off">
+    </div>
+
+    <div class="input-group">
+        <label>How many T-shirts?</label>
+        <input type="number" id="amount" value="1" min="1" max="50" autocomplete="off">
+    </div>
+
+    <div class="checkbox-group">
+        <input type="checkbox" id="putOnSale" checked>
+        <label for="putOnSale">Put on sale automatically</label>
+    </div>
+
+    <button id="generateBtn" class="normal-gen-btn">CREATE T-SHIRTS</button>
+
+    <div id="status"></div>
+</div>
+
+<div id="fastModeContainer">
+    <div class="fast-wrapper">
+        <button id="giantGenerateBtn">
+            <span id="giantBtnText">TAP TO CREATE T-SHIRT</span>
+        </button>
+        <div class="fast-input-overlay" id="fastOverlay">
+            <label>PRICE (ROBUX)</label>
+            <input type="number" id="fastPrice" value="5" min="1" autocomplete="off">
+        </div>
+        <div id="fastStatus"></div>
+    </div>
+</div>
+
+<script>
+    const btn = document.getElementById('generateBtn');
+    const statusDiv = document.getElementById('status');
+    const configInfo = document.getElementById('configInfo');
+    const uploadArea = document.getElementById('uploadArea');
+    const imageInput = document.getElementById('imageInput');
+
+    const toggleModeBtn = document.getElementById('toggleModeBtn');
+    const normalContainer = document.getElementById('normalContainer');
+    const fastModeContainer = document.getElementById('fastModeContainer');
+    const giantGenerateBtn = document.getElementById('giantGenerateBtn');
+    const giantBtnText = document.getElementById('giantBtnText');
+    const fastPrice = document.getElementById('fastPrice');
+    const fastOverlay = document.getElementById('fastOverlay');
+    const fastStatus = document.getElementById('fastStatus');
+    const normalPrice = document.getElementById('price');
+
+    let isFastMode = false;
+    let uploadedImageBase64 = null;
+
+    // --- Image upload preview ---
+    imageInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            uploadedImageBase64 = ev.target.result;
+            uploadArea.innerHTML = '<img src="' + uploadedImageBase64 + '" alt="preview">'
+                + '<div class="upload-text">Click to change image</div>';
+            uploadArea.classList.add('has-image');
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // --- Mode toggle ---
+    toggleModeBtn.onclick = () => {
+        isFastMode = !isFastMode;
+        if (isFastMode) {
+            normalContainer.style.display = 'none';
+            fastModeContainer.style.display = 'flex';
+            toggleModeBtn.textContent = 'NORMAL MODE';
+            fastPrice.value = normalPrice.value;
+            fastStatus.innerText = '';
+        } else {
+            normalContainer.style.display = 'block';
+            fastModeContainer.style.display = 'none';
+            toggleModeBtn.textContent = 'FAST MODE';
+            normalPrice.value = fastPrice.value;
+            loadStatus();
+        }
+    };
+
+    fastOverlay.addEventListener('click', (e) => e.stopPropagation());
+
+    async function loadStatus() {
+        if (isFastMode) return;
+        try {
+            const resp = await fetch('/status');
+            const data = await resp.json();
+            if (data.success) {
+                let html = 'Mode: <span>' + data.mode + '</span>';
+                if (data.groupId) html += ' &middot; Group: <span>' + data.groupId + '</span>';
+                if (!data.apiKeySet) html += ' &middot; <span style="color:#ff4141">API Key missing!</span>';
+                if (!data.cookieSet) html += ' &middot; <span style="color:#ff4141">Cookie missing!</span>';
+                configInfo.innerHTML = html;
+            }
+        } catch {
+            configInfo.innerText = 'Server offline';
+        }
+    }
+    loadStatus();
+
+    function executeCopy(text) {
+        return navigator.clipboard.writeText(text).catch(() => {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+        });
+    }
+
+    function copyToClipboard(text, btnEl) {
+        executeCopy(text).then(() => {
+            btnEl.textContent = 'Copied!';
+            setTimeout(() => { btnEl.textContent = 'Copy ID'; }, 1500);
+        });
+    }
+
+    // --- Normal mode create ---
+    btn.onclick = async () => {
+        const price = normalPrice.value;
+        const amount = document.getElementById('amount').value;
+        const name = document.getElementById('tshirtName').value || String(price);
+        const putOnSale = document.getElementById('putOnSale').checked;
+
+        statusDiv.style.display = 'block';
+        statusDiv.innerHTML = '<div class="working">Creating T-shirts... This may take a moment per shirt (asset processing).</div>';
+        btn.disabled = true;
+
+        try {
+            const body = {
+                price,
+                amount,
+                name,
+                putOnSale: putOnSale ? 'true' : 'false'
+            };
+            if (uploadedImageBase64) {
+                body.imageBase64 = uploadedImageBase64;
+            }
+
+            const response = await fetch('/create-tshirt', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                let html = '<div class="summary-box">Created <strong>' + data.totalCreated + '</strong> T-shirt(s)! <span style="color:#00bfff;"><br>IDs auto-copied!</span></div>';
+                const validIds = [];
+
+                data.tshirts.forEach((t, i) => {
+                    if (t.error) {
+                        html += '<div class="tshirt-card error"><div><div class="tshirt-error-text">T-Shirt ' + (i+1) + ': ' + (typeof t.error === 'object' ? JSON.stringify(t.error) : t.error) + '</div></div></div>';
+                    } else {
+                        const assetId = t.assetId || 'pending';
+                        if (assetId !== 'pending') validIds.push(assetId);
+                        const saleText = t.onSale ? 'On Sale' : (t.saleError ? 'Sale failed' : 'Not listed');
+                        const saleColor = t.onSale ? '#4ecdc4' : '#ff6b6b';
+                        html += '<div class="tshirt-card"><div><div class="tshirt-id">ID: ' + assetId + '</div><div class="tshirt-detail"><span style="color:' + saleColor + '">' + saleText + '</span> &middot; ' + (t.name || price) + ' R$</div></div><button class="copy-btn" onclick="copyToClipboard(\'' + assetId + '\', this)">Copy ID</button></div>';
+                    }
+                });
+
+                if (validIds.length > 0) executeCopy(validIds.join(', '));
+                statusDiv.innerHTML = html;
+            } else {
+                statusDiv.innerHTML = '<div class="tshirt-card error"><div><div class="tshirt-error-text">Error: ' + (typeof data.error === 'object' ? JSON.stringify(data.error) : data.error) + '</div></div></div>';
+            }
+        } catch (err) {
+            statusDiv.innerHTML = '<div class="tshirt-card error"><div><div class="tshirt-error-text">Connection error: ' + err.message + '</div></div></div>';
+        } finally {
+            btn.disabled = false;
+        }
+    };
+
+    // --- Fast mode create ---
+    giantGenerateBtn.onclick = async () => {
+        const price = fastPrice.value;
+        giantGenerateBtn.disabled = true;
+        fastStatus.style.color = '#000';
+        fastStatus.innerText = 'Creating...';
+        giantBtnText.innerText = 'CREATING...';
+
+        try {
+            const body = { price, amount: 1, name: String(price), putOnSale: 'true' };
+            if (uploadedImageBase64) body.imageBase64 = uploadedImageBase64;
+
+            const response = await fetch('/create-tshirt', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const data = await response.json();
+
+            if (data.success && data.tshirts && data.tshirts.length > 0) {
+                const first = data.tshirts[0];
+                if (first.error) {
+                    fastStatus.style.color = '#ff4141';
+                    fastStatus.innerText = 'Error: ' + (typeof first.error === 'object' ? JSON.stringify(first.error) : first.error);
+                } else {
+                    const assetId = first.assetId || 'pending';
+                    fastStatus.style.color = '#000';
+                    fastStatus.innerText = 'COPIED! ID: ' + assetId;
+                    executeCopy(assetId);
+                }
+            } else {
+                fastStatus.style.color = '#ff4141';
+                fastStatus.innerText = 'Error: ' + (data.error || 'Could not create.');
+            }
+        } catch (err) {
+            fastStatus.style.color = '#ff4141';
+            fastStatus.innerText = 'Network error: ' + err.message;
+        } finally {
+            giantGenerateBtn.disabled = false;
+            setTimeout(() => { giantBtnText.innerText = 'TAP TO CREATE T-SHIRT'; }, 2000);
+        }
+    };
+</script>
+</body>
+</html>
