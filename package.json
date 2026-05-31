@@ -1,0 +1,16 @@
+{
+  "name": "roblox-tshirt-maker",
+  "version": "1.0.0",
+  "description": "Roblox T-Shirt Maker — bulk create and list T-shirts via Open Cloud API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.0",
+    "dotenv": "^16.4.0",
+    "express": "^4.19.0",
+    "form-data": "^4.0.0",
+    "multer": "^1.4.5-lts.1"
+  }
+}
